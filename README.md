@@ -1,4 +1,4 @@
-## MemoPress
+## MemoPress - Bitcoin Bay Fork
 
 Helper methods for reading/writing to the Bitcoin Cash blockchain per the [Memo](https://memo.cash/protocol) and [BlockPress](https://www.blockpress.com/developers/blockpress-protocol) protocols.
 

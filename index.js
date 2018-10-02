@@ -8,27 +8,16 @@ let BITBOX = new BITBOXCli({
   corsproxy: 'remote'
 });
 let _ = require('underscore');
-let memoPrefixes = ['0x6d01', '0x6d02', '0x6d03', '0x6d04', '0x6d05', '0x6d06', '0x6d07', '0x6d08', '0x6d09', '0x6d0A', '0x6d0B', '0x6d0C'];
-let memoConvertedPrefixes = [365, 621, 877, 1133, 1389, 1645, 1901, 3181];
 
-let blockpressPrefixes = ['0x8d01', '0x8d02', '0x8d03', '0x8d04', '0x8d05', '0x8d06', '0x8d07', '0x8d08', '0x8d09', '0x8d01', '0x8d10', '0x8d11'];
-let blockpressConvertedPrefixes = [397, 653, 909, 1165, 1677, 1933, 2189, 2445, 4237, 4493];
+// Missing Prefixes: 6d08, 6d09, 6d0f, 6d11, 6d12
+// Planned Prefixes: 6d0b, 6d24
+let memoPrefixes = ['0x6d01', '0x6d02', '0x6d03', '0x6d04', '0x6d05', '0x6d06', '0x6d07', '0x6d0A', '0x6d0C', '0x6d0D', '0x6d0E', '0x6d10', '0x6d13', '0x6d14'];
+let memoConvertedPrefixes = [365, 621, 877, 1133, 1389, 1645, 1901, 2669, 3181, 3437, 3693, 4205, 4973, 5229];
 
-// let like = (txHash) => {
-//   let script = [BITBOX.Script.opcodes.OP_RETURN, Buffer.from('6d04', 'hex'), Buffer.from(txHash)];
-//   return BITBOX.Script.encode(script)
-// }
-//
-// let follow = (address) => {
-//   let script = [BITBOX.Script.opcodes.OP_RETURN, Buffer.from('6d06', 'hex'), Buffer.from(address)];
-//   return BITBOX.Script.encode(script)
-// }
-//
-// let unfollow = (address) => {
-//   let script = [BITBOX.Script.opcodes.OP_RETURN, Buffer.from('6d07', 'hex'), Buffer.from(address)];
-//   return BITBOX.Script.encode(script)
-// }
+let blockpressPrefixes = ['0x8d01', '0x8d02', '0x8d03', '0x8d04', '0x8d06', '0x8d07', '0x8d08', '0x8d09', '0x8d10', '0x8d11'];
+let blockpressConvertedPrefixes = [397, 653, 909, 1165, 1933, 2189, 2445, 4237, 4493];
 
+// Unimplemented Prefixes: 6d10, 6d13, 6d14
 exports.encode = (prefix, value) => {
   let data;
   let script;
@@ -47,8 +36,20 @@ exports.encode = (prefix, value) => {
       script = [BITBOX.Script.opcodes.OP_RETURN, Buffer.from('6d06', 'hex'), Buffer.from(value)];
     } else if(prefix === '0x6d07') {
       script = [BITBOX.Script.opcodes.OP_RETURN, Buffer.from('6d07', 'hex'), Buffer.from(value)];
+    } else if(prefix === '0x6d0A') {
+      script = [BITBOX.Script.opcodes.OP_RETURN, Buffer.from('6d0A', 'hex'), Buffer.from(value)];
     } else if(prefix === '0x6d0C') {
       script = [BITBOX.Script.opcodes.OP_RETURN, Buffer.from('6d0C', 'hex'), Buffer.from(value.topic), Buffer.from(value.message)];
+    } else if(prefix === '0x6d0D') {
+      script = [BITBOX.Script.opcodes.OP_RETURN, Buffer.from('6d0D', 'hex'), Buffer.from(value)];
+    } else if(prefix === '0x6d0E') {
+      script = [BITBOX.Script.opcodes.OP_RETURN, Buffer.from('6d0E', 'hex'), Buffer.from(value)];
+    } else if(prefix === '0x6d10') {
+      script = [BITBOX.Script.opcodes.OP_RETURN, Buffer.from('6d10', 'hex'), Buffer.from(value.poll_type), Buffer.from(value.option), Buffer.from(value.question)];
+    } else if(prefix === '0x6d13') {
+      script = [BITBOX.Script.opcodes.OP_RETURN, Buffer.from('6d13', 'hex'), Buffer.from(value.match(/[a-fA-F0-9]{2}/g).reverse().join(''), 'hex'), Buffer.from(value.option)];
+    } else if(prefix === '0x6d14') {
+      script = [BITBOX.Script.opcodes.OP_RETURN, Buffer.from('6d14', 'hex'), Buffer.from(value.match(/[a-fA-F0-9]{2}/g).reverse().join(''), 'hex'), Buffer.from(value.comment)];
     }
   } else if(_.includes(blockpressPrefixes, prefix)){
     if(prefix === '0x8d01') {
@@ -91,13 +92,21 @@ exports.decode = (op_return) => {
       ['6d05', 1389, 'Set Profile Text'],
       ['6d06', 1645, 'Follow'],
       ['6d07', 1901, 'Unfollow'],
-      ['6d0C', 3181, 'Post Topic Message']
+      ['6d0A', 2669, 'Set profile picture'],
+      ['6d0C', 3181, 'Post Topic Message'],
+      ['6d0D', 3437, 'Topic follow'],
+      ['6d0E', 3693, 'Topic unfollow'],
+      ['6d10', 4205, 'Create poll'],
+      ['6d13', 4973, 'Add poll option'],
+      ['6d14', 5229, 'Poll vote']
     ];
 
     memo.forEach((val, index) => {
       if(prefix === val[1]) {
         let asm
-        if(prefix === 877) {
+        if (prefix === 4205) {
+          asm = `${split[0]} ${memo[index][0]} ${split[4]}`;
+        } else if (prefix === 877 || prefix === 3181) {
           asm = `${split[0]} ${memo[index][0]} ${split[3]}`;
         } else {
           asm = `${split[0]} ${memo[index][0]} ${split[2]}`;

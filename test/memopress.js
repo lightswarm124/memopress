@@ -11,7 +11,7 @@ describe('#memopress', () => {
           let data;
           if(fixture.prefix === '0x6d03') {
             data = memopress.encode(fixture.prefix, {txHash: fixture.data.txHash, message: fixture.data.message});
-          } else if(fixture.prefix === '0x6d0C') {
+          } else if(fixture.prefix === '0x6d0c') {
             data = memopress.encode(fixture.prefix, {topic: fixture.data.topic, message: fixture.data.message});
           } else {
             data = memopress.encode(fixture.prefix, fixture.data);
